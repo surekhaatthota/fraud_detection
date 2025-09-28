@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profile</title>
+  <link rel="stylesheet" href="style.css" id="themeLink" />
+</head>
+<body>
+  <!-- Top Navigation -->
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="add-transactions.html">Add</a>
+    <a href="transactions.html">View</a>
+    <a href="risk.html">Risk Info</a>
+    <a href="#" onclick="logout()">Logout</a>
+    <a href="#" onclick="toggleTheme()">Toggle Theme</a>
+  </nav>
+
+  <!-- Profile Card -->
+  <div class="container">
+    <div class="profile-card">
+      <img src="https://via.placeholder.com/100" alt="Profile Icon" class="profile-icon" />
+      <h2>Welcome, <span id="name"></span>!</h2>
+      <p><strong>Username:</strong> <span id="username"></span></p>
+      <p><strong>Status:</strong> Logged in securely ✅</p>
+    </div>
+  </div>
+
+  <!-- Script Logic -->
+  <script>
+    // Apply saved theme
+    const theme = localStorage.getItem("theme");
+    document.getElementById("themeLink").href = theme === "dark" ? "dark.css" : "style.css";
+
+    // Load profile info
+    document.getElementById("name").innerText = localStorage.getItem("name") || "Not logged in";
+    document.getElementById("username").innerText = localStorage.getItem("username") || "Not logged in";
+
+    // Logout function
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      const themeLink = document.getElementById("themeLink");
+      const isDark = themeLink.href.includes("dark.css");
+      themeLink.href = isDark ? "style.css" : "dark.css";
+      localStorage.setItem("theme", isDark ? "light" : "dark");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="📛 Username" required />
+      <input type="password" id="password" placeholder="🔒 Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <p id="message"></p>
+    <p>Don't have an account? <a href="signup.html">Signup here</a></p>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append("username", username.value.trim());
+      formData.append("password", password.value.trim());
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/login", {
+          method: "POST",
+          body: formData,
+        });
+        const result = await res.json();
+
+        if (result.status === "success") {
+          localStorage.setItem("username", result.username);
+          localStorage.setItem("name", result.name);
+          window.location.href = "index.html";
+        } else {
+          message.innerText = result.message;
+        }
+      } catch (err) {
+        console.error("Login error:", err);
+        message.innerText = "Login failed.";
+      }
+    });
+  </script>
+</body>
+</html>

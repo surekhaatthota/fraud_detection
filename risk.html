@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Risk Info</title>
+  <link rel="stylesheet" href="style.css" id="themeLink" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="add-transactions.html">Add</a>
+    <a href="transactions.html">View</a>
+    <a href="profile.html">Profile</a>
+    <a href="#" onclick="logout()">Logout</a>
+    <a href="#" onclick="toggleTheme()">Toggle Theme</a>
+  </nav>
+
+  <div class="container">
+    <h2>Risk Distribution</h2>
+    <canvas id="riskChart" width="300" height="300"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const theme = localStorage.getItem("theme");
+    document.getElementById("themeLink").href = theme === "dark" ? "dark.css" : "style.css";
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    function toggleTheme() {
+      const themeLink = document.getElementById("themeLink");
+      const isDark = themeLink.href.includes("dark.css");
+      themeLink.href = isDark ? "style.css" : "dark.css";
+      localStorage.setItem("theme", isDark ? "light" : "dark");
+    }
+
+    const ctx = document.getElementById('riskChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Low', 'Medium', 'High'],
+        datasets: [{
+          data: [10, 5, 2],
+          backgroundColor: ['#4caf50', '#ff9800', '#f44336']
+        }]
+      }
+    });
+  </script>
+</body>
+</html>

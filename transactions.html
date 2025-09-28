@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>View Transactions</title>
+  <link rel="stylesheet" href="style.css" id="themeLink" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="signup.html">Signup</a>
+    <a href="login.html">Login</a>
+    <a href="profile.html">Profile</a>
+    <a href="add-transactions.html">Add</a>
+    <a href="transactions.html">View</a>
+    <a href="risk.html">Risk Info</a>
+    <a href="#" onclick="logout()">Logout</a>
+    <a href="#" onclick="toggleTheme()">Toggle Theme</a>
+  </nav>
+
+  <div class="container">
+    <h2>Your Transactions</h2>
+
+    <!-- Risk Summary Card -->
+    <div id="riskSummary" class="summary-card" style="display: none;">
+      <h3>Risk Summary</h3>
+      <p id="totalTx"></p>
+      <p id="lowRisk"></p>
+      <p id="mediumRisk"></p>
+      <p id="highRisk"></p>
+    </div>
+
+    <!-- Transactions Table -->
+    <p id="message">Loading...</p>
+    <table id="txTable" style="display: none;">
+      <thead>
+        <tr>
+          <th>Amount</th>
+          <th>Location</th>
+          <th>Device</th>
+          <th>Risk</th>
+        </tr>
+      </thead>
+      <tbody id="txBody"></tbody>
+    </table>
+
+    <!-- CSV Export Button -->
+    <button onclick="downloadCSV()" style="margin-top: 20px;">Export Transactions as CSV</button>
+  </div>
+
+  <!-- Risk Explanation Modal -->
+  <div id="riskModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h3>Risk Explanation</h3>
+      <p id="riskReason"></p>
+      <p id="riskAction"></p>
+    </div>
+  </div>
+
+  <script>
+    const theme = localStorage.getItem("theme");
+    document.getElementById("themeLink").href = theme === "dark" ? "dark.css" : "style.css";
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    function toggleTheme() {
+      const themeLink = document.getElementById("themeLink");
+      const isDark = themeLink.href.includes("dark.css");
+      themeLink.href = isDark ? "style.css" : "dark.css";
+      localStorage.setItem("theme", isDark ? "light" : "dark");
+    }
+
+    let transactionsData = [];
+    const isGuest = localStorage.getItem("guest") === "true";
+
+    async function loadTransactions() {
+      const username = localStorage.getItem("username");
+      if (!username) {
+        document.getElementById("message").innerText = "Please login to view transactions.";
+        return;
+      }
+
+      if (isGuest) {
+        transactionsData = [
+          { amount: 5000, location: "Delhi", device: "Laptop", risk: "High" },
+          { amount: 1200, location: "Hyderabad", device: "Mobile", risk: "Low" },
+          { amount: 2500, location: "Mumbai", device: "Tablet", risk: "Medium" }
+        ];
+        renderTransactions(transactionsData);
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/transactions/${username}`);
+        const data = await res.json();
+
+        if (!data.transactions || data.transactions.length === 0) {
+          document.getElementById("message").innerText = "No transactions found.";
+          return;
+        }
+
+        transactionsData = data.transactions;
+        renderTransactions(transactionsData);
+      } catch (err) {
+        console.error("Error loading transactions:", err);
+        document.getElementById("message").innerText = "Error loading transactions.";
+      }
+    }
+
+    function renderTransactions(data) {
+      document.getElementById("message").style.display = "none";
+      document.getElementById("txTable").style.display = "table";
+      document.getElementById("riskSummary").style.display = "block";
+
+      const tbody = document.getElementById("txBody");
+      tbody.innerHTML = "";
+
+      let low = 0, medium = 0, high = 0;
+
+      data.forEach(tx => {
+        if (tx.risk === "Low") low++;
+        else if (tx.risk === "Medium") medium++;
+        else if (tx.risk === "High") high++;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>₹${tx.amount}</td>
+          <td>${tx.location}</td>
+          <td>${tx.device}</td>
+          <td>${tx.risk}</td>
+        `;
+        row.onclick = () => showRiskModal(tx);
+        tbody.appendChild(row);
+      });
+
+      document.getElementById("totalTx").innerText = `Total Transactions: ${data.length}`;
+      document.getElementById("lowRisk").innerText = `Low Risk: ${low}`;
+      document.getElementById("mediumRisk").innerText = `Medium Risk: ${medium}`;
+      document.getElementById("highRisk").innerText = `High Risk: ${high}`;
+    }
+
+    function downloadCSV() {
+      if (transactionsData.length === 0) {
+        alert("No transactions to export.");
+        return;
+      }
+
+      const headers = ["Amount", "Location", "Device", "Risk"];
+      const rows = transactionsData.map(tx => [tx.amount, tx.location, tx.device, tx.risk]);
+
+      const csvContent = [headers, ...rows]
+        .map(row => row.join(","))
+        .join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "transactions.csv";
+      a.click();
+    }
+
+    function showRiskModal(tx) {
+      const reason = getRiskReason(tx);
+      const action = getRiskAction(tx.risk);
+
+      document.getElementById("riskReason").innerText = `Reason: ${reason}`;
+      document.getElementById("riskAction").innerText = `Suggested Action: ${action}`;
+      document.getElementById("riskModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("riskModal").style.display = "none";
+    }
+
+    function getRiskReason(tx) {
+      if (tx.amount > 4000) return "Large transaction amount";
+      if (tx.location !== "Your usual location") return "Unusual location";
+      if (tx.device !== "Mobile") return "New device used";
+      return "General risk pattern detected";
+    }
+
+    function getRiskAction(risk) {
+      if (risk === "High") return "Report this transaction immediately";
+      if (risk === "Medium") return "Review and confirm";
+      return "No action needed";
+    }
+
+    loadTransactions();
+  </script>
+</body>
+</html>

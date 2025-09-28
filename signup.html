@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Signup</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="signup.html">Signup</a>
+    <a href="login.html">Login</a>
+    <a href="profile.html">Profile</a>
+    <a href="add-transaction.html">Add</a>
+    <a href="transactions.html">View</a>
+    <a href="risk.html">Risk Info</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </nav>
+
+  <div class="container">
+    <h2>Create Account</h2>
+    <form id="signupForm">
+      <input type="text" id="name" placeholder="👤 Name" required />
+      <input type="text" id="username" placeholder="📛 Username" required />
+      <input type="password" id="password" placeholder="🔒 Password" required />
+      <button type="submit">Signup</button>
+    </form>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("username", username);
+      formData.append("password", password);
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/signup", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await res.json();
+        document.getElementById("message").innerText = result.message;
+
+        if (result.status === "success") {
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 1000);
+        }
+      } catch (err) {
+        console.error("Signup error:", err);
+        document.getElementById("message").innerText = "Signup failed. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>

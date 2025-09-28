@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css" id="themeLink" />
+</head>
+<body>
+  <div class="container">
+    <h2 id="welcomeMessage">Welcome!</h2>
+    <div id="dashboard">
+      <button onclick="goTo('profile.html')">Profile</button>
+      <button onclick="goTo('add-transactions.html')">Add Transaction</button>
+      <button onclick="goTo('transactions.html')">View Transactions</button>
+      <button onclick="goTo('risk.html')">Risk Info</button>
+      <button onclick="logout()">Logout</button>
+      <button onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+  </div>
+
+  <script>
+    const username = localStorage.getItem("username");
+    const name = localStorage.getItem("name");
+
+    if (!username || !name) {
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("welcomeMessage").innerText = `Welcome, ${name}!`;
+    }
+
+    function goTo(page) {
+      window.location.href = page;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    function toggleTheme() {
+      const theme = document.getElementById("themeLink");
+      theme.href = theme.href.includes("dark") ? "style.css" : "dark.css";
+    }
+  </script>
+</body>
+</html>
